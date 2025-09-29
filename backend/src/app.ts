@@ -25,5 +25,3 @@ app.use('/api/notes', notesRoutes);
 app.use(errorHandler);
 
 export default app;
-
-
