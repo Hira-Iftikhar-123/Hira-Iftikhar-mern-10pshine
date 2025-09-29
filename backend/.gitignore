@@ -1,1 +1,10 @@
-node_modules\r\ndist\r\n.env\r\n.generated\r\n.prisma\r\n.generated\r\ncoverage\r\n
+node_modules/
+dist/
+coverage/
+.env
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
