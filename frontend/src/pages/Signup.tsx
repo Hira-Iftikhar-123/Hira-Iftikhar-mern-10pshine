@@ -1,4 +1,5 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../state/AuthContext'
 
@@ -21,15 +22,24 @@ export function Signup() {
   }
 
   return (
-    <div>
-      <h2>Create Account</h2>
-      <form onSubmit={onSubmit}>
-        <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-        <button type="submit">Sign up</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-      </form>
-      <p>Already have an account? <Link to="/login">Log in</Link></p>
+    <div className="app-shell" style={{ position: 'relative' }}>
+      <div className="blob one" />
+      <div className="blob two" />
+      <div className="blob three" />
+
+      <div className="center">
+        <div className="card">
+          <h2>Create account</h2>
+          <p className="subtle" style={{ marginTop: -8, marginBottom: 20 }}>Join to start saving notes</p>
+          <form className="stack" onSubmit={onSubmit}>
+            <input className="input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+            <input className="input" placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <button className="btn btn-primary" type="submit">Create free account</button>
+            {error && <p className="error">{error}</p>}
+          </form>
+          <p className="subtle" style={{ marginTop: 14 }}>Already have an account? <Link to="/login">Log in</Link></p>
+        </div>
+      </div>
     </div>
   )
 }

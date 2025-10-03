@@ -1,52 +1,81 @@
-import mysql from 'mysql2/promise';
+import { Pool } from 'pg';
 import crypto from 'node:crypto';
 
-const pool = mysql.createPool({ uri: process.env.DATABASE_URL, connectionLimit: 10 });
+const pool = new Pool({
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: '1234',
+    database: 'Notes_App',
+    max: 10
+});
 
 export const notesService = {
     async listUserNotes(userId: string) {
-        const conn = await pool.getConnection();
+        const client = await pool.connect();
         try {
-            const [rows] = await conn.execute('SELECT id, title, content FROM notes WHERE user_id = ? ORDER BY updated_at DESC', [userId]);
-            return Array.isArray(rows) ? rows : [];
+            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE user_id = $1 ORDER BY updated_at DESC', [userId]);
+            return result.rows;
         } finally {
-            conn.release();
+            client.release();
         }
     },
     async createNote(userId: string, data: { title: string; content?: string }) {
-        const conn = await pool.getConnection();
+        const client = await pool.connect();
         try {
             const id = crypto.randomUUID();
-            await conn.execute('INSERT INTO notes (id, title, content, user_id) VALUES (?, ?, ?, ?)', [id, data.title, data.content || '', userId]);
-            return { id, title: data.title, content: data.content || '' };
+            await client.query('INSERT INTO notes (id, title, content, user_id) VALUES ($1, $2, $3, $4)', [id, data.title, data.content || '', userId]);
+            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+            return result.rows[0];
         } finally {
-            conn.release();
+            client.release();
         }
     },
     async updateNote(userId: string, id: string, data: { title?: string; content?: string }) {
-        const conn = await pool.getConnection();
+        const client = await pool.connect();
         try {
-            const [rows] = await conn.execute('SELECT user_id FROM notes WHERE id = ?', [id]);
-            const note = Array.isArray(rows) && rows.length ? (rows[0] as any) : null;
-            if (!note || note.user_id !== userId) throw Object.assign(new Error('Not found'), { status: 404 });
-            await conn.execute('UPDATE notes SET title = COALESCE(?, title), content = COALESCE(?, content) WHERE id = ?', [data.title ?? null, data.content ?? null, id]);
-            const [after] = await conn.execute('SELECT id, title, content FROM notes WHERE id = ?', [id]);
-            return Array.isArray(after) && after.length ? (after[0] as any) : { id, title: data.title, content: data.content };
+            const checkResult = await client.query('SELECT user_id FROM notes WHERE id = $1', [id]);
+            if (checkResult.rows.length === 0 || checkResult.rows[0].user_id !== userId) {
+                throw Object.assign(new Error('Not found'), { status: 404 });
+            }
+
+            const fieldsToUpdate: string[] = [];
+            const values: any[] = [];
+
+            if (data.title !== undefined) {
+                fieldsToUpdate.push('title = $' + (values.length + 1));
+                values.push(data.title);
+            }
+            if (data.content !== undefined) {
+                fieldsToUpdate.push('content = $' + (values.length + 1));
+                values.push(data.content);
+            }
+
+            if (fieldsToUpdate.length === 0) {
+                const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+                return result.rows[0];
+            }
+
+            values.push(id);
+            const query = `UPDATE notes SET ${fieldsToUpdate.join(', ')} WHERE id = $${values.length}`;
+            await client.query(query, values);
+            
+            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+            return result.rows[0];
         } finally {
-            conn.release();
+            client.release();
         }
     },
     async deleteNote(userId: string, id: string) {
-        const conn = await pool.getConnection();
+        const client = await pool.connect();
         try {
-            const [rows] = await conn.execute('SELECT user_id FROM notes WHERE id = ?', [id]);
-            const note = Array.isArray(rows) && rows.length ? (rows[0] as any) : null;
-            if (!note || note.user_id !== userId) throw Object.assign(new Error('Not found'), { status: 404 });
-            await conn.execute('DELETE FROM notes WHERE id = ?', [id]);
+            const checkResult = await client.query('SELECT user_id FROM notes WHERE id = $1', [id]);
+            if (checkResult.rows.length === 0 || checkResult.rows[0].user_id !== userId) {
+                throw Object.assign(new Error('Not found'), { status: 404 });
+            }
+            await client.query('DELETE FROM notes WHERE id = $1', [id]);
         } finally {
-            conn.release();
+            client.release();
         }
     }
 };
-
-

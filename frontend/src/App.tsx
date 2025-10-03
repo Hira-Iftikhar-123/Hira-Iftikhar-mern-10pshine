@@ -7,25 +7,50 @@ function App() {
   const nav = useNavigate()
 
   return (
-    <div>
-      <header style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <h2>Notes</h2>
+    <div className="app-shell" style={{ position: 'relative' }}>
+      <div className="blob one" />
+      <div className="blob two" />
+      <div className="blob three" />
+
+      <div className="app-header">
+        <div className="brand">
+          <div className="brand-badge" />
+          Noteable
+        </div>
         <div>
           {user ? (
             <>
-              <span style={{ marginRight: 12 }}>{user.email}</span>
-              <button onClick={() => { logout(); nav('/login') }}>Logout</button>
+              <span style={{ marginRight: 12, color: 'var(--muted)' }}>{user.email}</span>
+              <button className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }} onClick={() => { logout(); nav('/login') }}>Logout</button>
             </>
           ) : (
-            <>
-              <Link to="/login">Login</Link>
-              <span style={{ margin: '0 8px' }}>/</span>
-              <Link to="/signup">Signup</Link>
-            </>
+            <div className="actions">
+              <Link to="/login" className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }}>Log In</Link>
+              <Link to="/signup" className="btn btn-primary" style={{ width: 'auto', padding: '10px 14px' }}>Create Account</Link>
+            </div>
           )}
         </div>
-      </header>
-      <p>Welcome{user ? `, ${user.email}` : ''}!</p>
+      </div>
+
+      <section className="hero">
+      <h1 className="hero-title">
+            Note it. Sort it. Done in <span className="accent">seconds</span>.
+          </h1>
+          <p className="hero-subtitle">
+            No clutter. No lag. Just notes, the way it should be.
+          </p>
+        {!user && (
+          <div className="actions">
+            <Link to="/signup" className="btn btn-primary" style={{ width: 'auto', padding: '12px 18px' }}>Get Started</Link>
+          </div>
+        )}
+        <div className="badges">
+          <span className="badge">JWT Auth</span>
+          <span className="badge">PostgreSQL</span>
+          <span className="badge">Express API</span>
+          <span className="badge">React + Vite</span>
+        </div>
+      </section>
     </div>
   )
 }

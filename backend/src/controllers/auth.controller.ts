@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { signInUser, createUser } from '../services/auth.service';
-import mysql from 'mysql2/promise';
+import { signInUser, createUser, findUserById } from '../services/auth.service';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const credentialsSchema = z.object({
@@ -27,17 +26,10 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function me(req: AuthRequest, res: Response) {
-    const pool = mysql.createPool({ uri: process.env.DATABASE_URL, connectionLimit: 10 });
     const userId = req.userId!;
-    const conn = await pool.getConnection();
-    try {
-        const [rows] = await conn.execute('SELECT id, email FROM users WHERE id = ?', [userId]);
-        const user = Array.isArray(rows) && rows.length ? (rows[0] as any) : null;
-        if (!user) return res.status(404).json({ error: 'Not found' });
-        res.json({ id: user.id, email: user.email });
-    } finally {
-        conn.release();
-    }
+    const user = await findUserById(userId);
+    if (!user) return res.status(404).json({ error: 'Not found' });
+    res.json({ id: user.id, email: user.email });
 }
 
 
