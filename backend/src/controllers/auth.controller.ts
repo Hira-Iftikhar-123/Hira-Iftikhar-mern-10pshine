@@ -16,7 +16,7 @@ export async function signup(req: Request, res: Response) {
             type: 'auth_controller',
             action: 'signup_validation_failed',
             email: req.body.email,
-            errors: parse.error.errors,
+            errors: parse.error.issues,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
@@ -59,7 +59,7 @@ export async function login(req: Request, res: Response) {
             type: 'auth_controller',
             action: 'login_validation_failed',
             email: req.body.email,
-            errors: parse.error.errors,
+            errors: parse.error.issues,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
