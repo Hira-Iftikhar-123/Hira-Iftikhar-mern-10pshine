@@ -85,18 +85,24 @@ a:hover { color: var(--primary-600); }
 
 .input {
   width: 100%;
-  background: #0f0a22;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
   color: var(--text);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border-radius: 12px;
+  padding: 16px;
   font-size: 16px;
   outline: none;
-  transition: border-color .2s, box-shadow .2s;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 .input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 4px var(--ring);
+  background: rgba(255,255,255,0.08);
+}
+.input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
 }
 
 .btn {
@@ -104,14 +110,29 @@ a:hover { color: var(--primary-600); }
   background: linear-gradient(135deg, var(--primary), var(--primary-600));
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 16px;
   font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 12px 26px rgba(124,58,237,.45);
+  box-shadow: 0 8px 24px rgba(124,58,237,0.3);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
-.btn:hover { filter: brightness(1.05); }
-.btn:active { transform: translateY(1px); }
+.btn:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(124,58,237,0.4);
+}
+.btn:active { 
+  transform: translateY(0px);
+  box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .error { color: var(--error); margin: 6px 0 0; font-size: 14px; }
 
@@ -138,18 +159,34 @@ a:hover { color: var(--primary-600); }
   font-size: clamp(14px, 2.2vw, 18px);
 }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-600)); }
-.btn-secondary { background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--text); }
-.btn-secondary:hover { background: rgba(255,255,255,0.04); }
+.btn-primary { 
+  background: linear-gradient(135deg, var(--primary), var(--primary-600)); 
+}
+.btn-secondary { 
+  background: rgba(255,255,255,0.1); 
+  border: 1px solid rgba(255,255,255,0.2); 
+  color: var(--text); 
+  backdrop-filter: blur(8px);
+}
+.btn-secondary:hover { 
+  background: rgba(255,255,255,0.15); 
+  border-color: rgba(255,255,255,0.3);
+}
 
 .badges { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .badge {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+.badge:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08));
+  border-color: rgba(255,255,255,0.25);
 }
 
 /* Decorative blobs */
