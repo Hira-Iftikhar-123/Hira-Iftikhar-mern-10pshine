@@ -26,6 +26,7 @@ function App() {
           ) : (
             <div className="actions">
               <Link to="/login" className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }}>Log In</Link>
+              <Link to="/notes" className="btn" style={{ width: 'auto', padding: '10px 14px', marginRight: 8 }}>My Notes</Link>
               <Link to="/signup" className="btn btn-primary" style={{ width: 'auto', padding: '10px 14px' }}>Create Account</Link>
             </div>
           )}
