@@ -21,12 +21,12 @@ function App() {
           {user ? (
             <>
               <span style={{ marginRight: 12, color: 'var(--muted)' }}>{user.email}</span>
+              <Link to="/notes" className="btn" style={{ width: 'auto', padding: '10px 14px', marginRight: 8 }}>My Notes</Link>
               <button className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }} onClick={() => { logout(); nav('/login') }}>Logout</button>
             </>
           ) : (
             <div className="actions">
               <Link to="/login" className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }}>Log In</Link>
-              <Link to="/notes" className="btn" style={{ width: 'auto', padding: '10px 14px', marginRight: 8 }}>My Notes</Link>
               <Link to="/signup" className="btn btn-primary" style={{ width: 'auto', padding: '10px 14px' }}>Create Account</Link>
             </div>
           )}
