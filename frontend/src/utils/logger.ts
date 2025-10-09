@@ -13,6 +13,10 @@ interface LogEntry {
 class Logger {
   private isDevelopment = import.meta.env.DEV;
 
+  constructor() {
+    // Logger initialized
+  }
+
   private formatLog(level: string, entry: LogEntry, message: string): string {
     const timestamp = new Date().toISOString();
     return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
