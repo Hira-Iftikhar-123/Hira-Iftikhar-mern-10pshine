@@ -6,6 +6,7 @@ import logger from './utils/logger';
 import authRoutes from './routes/auth.routes';
 import notesRoutes from './routes/notes.routes';
 import { errorHandler } from './middleware/error.middleware';
+import { ensureTables } from './services/auth.service';
 
 dotenv.config();
 
@@ -14,6 +15,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Initialize database tables on startup
+ensureTables().catch((err) => {
+    logger.error(err, 'Failed to ensure database tables');
+});
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });

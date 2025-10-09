@@ -11,7 +11,7 @@ app.listen(port, () => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.send('Welcome to my Notes App'); 
 });
 
 app.get('/health', (req, res) => {
@@ -19,5 +19,5 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/api/notes', (req, res) => {
-    res.send('Hello World');
+    res.send('Welcome to my Notes Dashboard');  
 });

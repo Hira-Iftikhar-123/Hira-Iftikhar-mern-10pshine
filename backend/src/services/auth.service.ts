@@ -12,7 +12,7 @@ const pool = new Pool({
     max: 10
 });
 
-async function ensureTables() {
+export async function ensureTables() {
     const client = await pool.connect();
     try {
         const sqlUser = `CREATE TABLE IF NOT EXISTS users (

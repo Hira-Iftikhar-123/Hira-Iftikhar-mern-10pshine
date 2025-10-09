@@ -57,6 +57,8 @@ export const notesService = {
             }
 
             values.push(id);
+            // always bump updated_at on updates
+            fieldsToUpdate.push(`updated_at = CURRENT_TIMESTAMP`);
             const query = `UPDATE notes SET ${fieldsToUpdate.join(', ')} WHERE id = $${values.length}`;
             await client.query(query, values);
             
