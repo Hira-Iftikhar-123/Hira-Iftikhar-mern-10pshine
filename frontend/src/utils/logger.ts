@@ -17,13 +17,13 @@ class Logger {
     // Logger initialized
   }
 
-  private formatLog(level: string, entry: LogEntry, message: string): string {
+  private formatLog(level: string, message: string): string {
     const timestamp = new Date().toISOString();
     return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
   }
 
   private log(level: 'info' | 'warn' | 'error', entry: LogEntry, message: string) {
-    const formattedMessage = this.formatLog(level, entry, message);
+    const formattedMessage = this.formatLog(level, message);
     
     if (this.isDevelopment) {
       console[level](formattedMessage, entry);
