@@ -22,7 +22,6 @@ export function requestLogger(req: Request, res: Response, next: NextFunction)
     res.on('finish', () => 
     {
         const duration = Date.now() - start;
-
         logger.info({
             type: 'http_response',
             method,

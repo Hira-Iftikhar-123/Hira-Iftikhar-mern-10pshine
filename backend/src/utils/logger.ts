@@ -17,5 +17,3 @@ const logger = pino({
 }, createWriteStream('./logs/app.log'));
 
 export default logger;
-
-

@@ -9,5 +9,3 @@ router.post('/login', login);
 router.get('/me', requireAuth, me);
 
 export default router;
-
-
