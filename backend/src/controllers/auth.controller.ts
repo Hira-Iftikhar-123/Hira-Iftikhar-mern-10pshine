@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { signInUser, createUser, findUserById } from '../services/auth.service';
 import { AuthRequest } from '../middleware/auth.middleware';
+import logger from '../utils/logger';
 
 function formatZodErrors(error: z.ZodError<unknown>): { field: string; message: string }[] {
     return error.issues.map(issue => ({

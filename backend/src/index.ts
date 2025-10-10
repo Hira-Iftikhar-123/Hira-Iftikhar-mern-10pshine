@@ -7,7 +7,12 @@ dotenv.config();
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 app.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
+    logger.info({
+        type: 'server_startup',
+        port,
+        nodeEnv: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+    }, `Server started successfully on port ${port}`);
 });
 
 app.get('/', (req, res) => {

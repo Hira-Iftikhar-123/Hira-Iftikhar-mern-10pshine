@@ -13,5 +13,3 @@ router.put('/:id', asyncHandler(updateNote));
 router.delete('/:id', asyncHandler(deleteNote));
 
 export default router;
-
-
