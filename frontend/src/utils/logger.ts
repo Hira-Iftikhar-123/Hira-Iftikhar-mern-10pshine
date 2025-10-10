@@ -17,19 +17,17 @@ class Logger {
     // Logger initialized
   }
 
-  private formatLog(level: string, entry: LogEntry, message: string): string {
+  private formatLog(level: string, message: string): string {
     const timestamp = new Date().toISOString();
     return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
   }
 
   private log(level: 'info' | 'warn' | 'error', entry: LogEntry, message: string) {
-    const formattedMessage = this.formatLog(level, entry, message);
+    const formattedMessage = this.formatLog(level, message);
     
     if (this.isDevelopment) {
       console[level](formattedMessage, entry);
     } else {
-      // In production, you might want to send logs to a logging service
-      // For now, we'll just use console logging
       console[level](formattedMessage, entry);
     }
   }
