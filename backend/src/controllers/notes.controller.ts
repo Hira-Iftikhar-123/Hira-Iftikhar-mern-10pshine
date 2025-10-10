@@ -57,7 +57,7 @@ export async function createNote(req: AuthRequest, res: Response) {
             type: 'notes_controller',
             action: 'create_note_validation_failed',
             userId,
-            errors: parse.error.errors,
+            errors: parse.error.issues,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
@@ -116,7 +116,7 @@ export async function updateNote(req: AuthRequest, res: Response) {
             action: 'update_note_validation_failed',
             userId,
             noteId,
-            errors: parse.error.errors,
+            errors: parse.error.issues,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
@@ -179,7 +179,6 @@ export async function deleteNote(req: AuthRequest, res: Response) {
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
         }, `User ${userId} deleting note ${noteId}`);
-
         await notesService.deleteNote(userId, noteId);
         
         logger.info({
@@ -207,5 +206,3 @@ export async function deleteNote(req: AuthRequest, res: Response) {
         throw error;
     }
 }
-
-

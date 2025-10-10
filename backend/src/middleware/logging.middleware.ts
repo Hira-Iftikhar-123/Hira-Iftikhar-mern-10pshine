@@ -19,11 +19,9 @@ export function requestLogger(req: Request, res: Response, next: NextFunction)
         timestamp: new Date().toISOString()
     }, `Incoming ${method} ${path}`);
 
-    const originalEnd = res.end;
-    res.end = function(chunk?: any, encoding?: any) 
+    res.on('finish', () => 
     {
         const duration = Date.now() - start;
-        
         logger.info({
             type: 'http_response',
             method,
@@ -33,9 +31,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction)
             contentLength: res.get('Content-Length'),
             timestamp: new Date().toISOString()
         }, `Outgoing ${method} ${path} - ${res.statusCode} (${duration}ms)`);
-        
-        originalEnd.call(this, chunk, encoding);
-    };
+    });
 
     next();
 }

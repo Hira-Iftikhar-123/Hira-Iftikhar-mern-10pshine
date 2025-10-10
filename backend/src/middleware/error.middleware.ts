@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../utils/logger';
-import {ZodError } from 'zod';
+import { ZodError } from 'zod';
 
 function formatZodErrors(error: ZodError) {
     return error.issues.map(issue => ({
@@ -12,12 +12,11 @@ function formatZodErrors(error: ZodError) {
 export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
     const error = err as any;
 
-    // Default values
     let status = error.status || 500;
     let message = error.message || 'Internal Server Error';
     let details: unknown = undefined;
 
-    // Zod validation
+    // Zod validation errors
     if (error instanceof ZodError) {
         status = 400;
         message = 'Validation failed';
@@ -25,16 +24,25 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
     }
 
     // Postgres unique violation
-    if (error && error.code === '23505') {
+    if (error?.code === '23505') {
         status = 409;
         message = 'A record with the same unique value already exists';
     }
 
-    // Auth / forbidden patterns
+    // Auth / forbidden
     if (message === 'Invalid token') status = 401;
     if (message === 'Unauthorized') status = 401;
 
-    logger.error({ err: error, path: req.path, method: req.method }, message);
+    // Enhanced logging
+    logger.error({
+        err: error,
+        path: req.path,
+        method: req.method,
+        status,
+        userAgent: req.get('User-Agent'),
+        ip: req.ip,
+        timestamp: new Date().toISOString()
+    }, `Error ${status}: ${message}`);
 
     const payload: any = { error: message };
     if (details) payload.details = details;
