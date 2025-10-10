@@ -146,5 +146,3 @@ export async function me(req: AuthRequest, res: Response) {
         throw error;
     }
 }
-
-

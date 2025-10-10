@@ -179,7 +179,6 @@ export async function deleteNote(req: AuthRequest, res: Response) {
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
         }, `User ${userId} deleting note ${noteId}`);
-
         await notesService.deleteNote(userId, noteId);
         
         logger.info({
@@ -207,5 +206,3 @@ export async function deleteNote(req: AuthRequest, res: Response) {
         throw error;
     }
 }
-
-
