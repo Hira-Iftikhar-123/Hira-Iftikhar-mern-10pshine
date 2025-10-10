@@ -144,4 +144,5 @@ export async function me(req: AuthRequest, res: Response) {
             timestamp: new Date().toISOString()
         }, `Error retrieving user profile for userId: ${userId}`);
         throw error;
+    }
 }
