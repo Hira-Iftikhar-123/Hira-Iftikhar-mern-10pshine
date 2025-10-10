@@ -28,8 +28,6 @@ class Logger {
     if (this.isDevelopment) {
       console[level](formattedMessage, entry);
     } else {
-      // In production, you might want to send logs to a logging service
-      // For now, we'll just use console logging
       console[level](formattedMessage, entry);
     }
   }
