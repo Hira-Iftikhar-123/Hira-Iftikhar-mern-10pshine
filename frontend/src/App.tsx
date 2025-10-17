@@ -20,30 +20,11 @@ function App() {
         </div>
         <div>
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ 
-                padding: '8px 16px', 
-                backgroundColor: 'rgba(255,255,255,0.1)', 
-                borderRadius: '20px',
-                fontSize: '14px',
-                color: 'var(--muted)'
-              }}>
-                {user.email}
-              </div>
-              <button 
-                className="btn btn-secondary" 
-                style={{ 
-                  width: 'auto', 
-                  padding: '12px 20px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  borderRadius: '8px'
-                }} 
-                onClick={() => { logger.userActivity('logout_button_click', user?.id, user?.email); logout(); nav('/login') }}
-              >
-                Logout
-              </button>
-            </div>
+            <>
+              <span style={{ marginRight: 12, color: 'var(--muted)' }}>{user.email}</span>
+              <Link to="/notes" className="btn" style={{ width: 'auto', padding: '10px 14px', marginRight: 8 }}>My Notes</Link>
+              <button className="btn btn-secondary" style={{ width: 'auto', padding: '10px 14px' }} onClick={() => { logout(); nav('/login') }}>Logout</button>
+            </>
           ) : (
             <div className="actions" style={{ gap: '12px' }}>
               <Link 
