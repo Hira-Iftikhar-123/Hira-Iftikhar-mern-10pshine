@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { AuthProvider } from './state/AuthContext'
+import { ThemeProvider } from './state/ThemeContext'
 import { ProtectedRoute } from './components/ProtectedRoute' 
 import { NotesDashboard } from './pages/NotesDashboard'
 import { NoteEditor } from './pages/NoteEditor'
@@ -20,8 +21,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

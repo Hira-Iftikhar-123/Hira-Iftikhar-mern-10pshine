@@ -53,11 +53,11 @@ export function NoteEditor() {
   }
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '90vh' }}>
+    <div className="page-bg">
       <div className="container-narrow">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16,}}>
   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-    <h1 style={{ margin: 0, fontSize: 20, color: '#0f172a' }}>Edit Note</h1>
+    <h1 style={{ margin: 0, fontSize: 20, color: 'var(--text-primary)' }}>Edit Note</h1>
     <Link to="/notes" className="btn btn-secondary" style={{color: '#aa3377', width: 'auto', padding: '10px 20px' }}>Back </Link>
     </div>
 

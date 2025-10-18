@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-
+import { ThemeToggle } from '../components/ThemeToggle'
+import { useTheme } from '../state/ThemeContext'
 type Note = { id: string; title: string; content: string; created_at: string; updated_at: string }
 
 export function NotesDashboard() {
@@ -9,7 +10,7 @@ export function NotesDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const nav = useNavigate()
-
+  const { theme } = useTheme()
   async function load() {
     setLoading(true)
     setError(null)
@@ -71,18 +72,20 @@ export function NotesDashboard() {
             style={{
               margin: 0,
               fontSize: 28,
-              color: '#000000',    
+              color: theme === 'light' ? '#000000' : '#ffffff', // 🌓 dynamic text color
               fontWeight: 650,
               letterSpacing: '-0.025em',
+              transition: 'color 0.3s ease', // smooth transition when switching
             }}
           >
-            MY NOTES
+            All Notes
           </h1>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary" style={{ color: '#6366f1', width: 'auto', padding: '10px 14px' }} onClick={load}>Refresh</button>
-            <button className="btn btn-secondary" style={{color: '#e39ffb', width: 'auto', padding: '10px 14px' }} onClick={createNewNote}>New Note</button>
-          </div>
+           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+             <ThemeToggle />
+             <button className="btn btn-secondary" style={{ color: '#6366f1', width: 'auto', padding: '10px 14px' }} onClick={load}>Refresh</button>
+             <button className="btn btn-secondary" style={{color: '#e39ffb', width: 'auto', padding: '10px 14px' }} onClick={createNewNote}>New Note</button>
+           </div>
         </div>
 
         <div className="surface" style={{ padding: 24 }}>
