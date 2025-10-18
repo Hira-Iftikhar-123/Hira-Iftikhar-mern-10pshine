@@ -38,7 +38,47 @@ export function NotesDashboard() {
     <div className="page-bg">
       <div className="container-narrow notes-wrap">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h1 style={{ margin: 0, fontSize: 24, color: '#0f172a' }}>My Notes</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div 
+              onClick={() => nav('/')}
+              style={{ 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 12px',
+                borderRadius: 8,
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                transition: 'all 0.2s ease',
+                fontWeight: 700,
+                fontSize: 16,
+                color: '#6366f1'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              <span style={{ fontSize: 16 }}>←</span>
+              <span>Home</span>
+            </div>
+            <h1
+            style={{
+              margin: 0,
+              fontSize: 28,
+              color: '#000000',    
+              fontWeight: 650,
+              letterSpacing: '-0.025em',
+            }}
+          >
+            MY NOTES
+          </h1>
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-secondary" style={{ color: '#6366f1', width: 'auto', padding: '10px 14px' }} onClick={load}>Refresh</button>
             <button className="btn btn-secondary" style={{color: '#e39ffb', width: 'auto', padding: '10px 14px' }} onClick={createNewNote}>New Note</button>
@@ -58,7 +98,7 @@ export function NotesDashboard() {
               marginBottom: 12
             }}>{error}</div>
           )}
-
+          
           <div className="note-list">
             {notes.map(n => (
               <button key={n.id} className="note-card" onClick={() => nav(`/editor/${n.id}`)} style={{ textAlign: 'center' }}>
