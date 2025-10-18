@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import notesRoutes from './routes/notes.routes';
 import { errorHandler } from './middleware/error.middleware';
+import { requestLogger } from './middleware/logging.middleware';
+import logger from './utils/logger';
 import { ensureTables } from './services/auth.service';
 
 dotenv.config();

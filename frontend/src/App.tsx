@@ -2,6 +2,7 @@ import './App.css'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './state/AuthContext'
 import { logger } from './utils/logger'
+import { FaReact, FaDatabase, FaLock, FaServer } from "react-icons/fa";
 
 function App() {
   const { user, logout } = useAuth()
@@ -66,7 +67,7 @@ function App() {
         </h1>
         <p className="hero-subtitle" style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', lineHeight: '1.6', marginBottom: '40px' }}>
           The simplest way to capture, organize, and access your thoughts. 
-          No clutter, no complexity—just pure productivity.
+          No clutter, no complexity just pure productivity.
         </p>
         
         {!user && (
@@ -87,14 +88,22 @@ function App() {
             </Link>
           </div>
         )}
-        
-        <div className="badges" style={{ gap: '12px' }}>
-          <span className="badge" style={{ padding: '8px 16px', fontSize: '13px' }}>🔒 JWT Authentication</span>
-          <span className="badge" style={{ padding: '8px 16px', fontSize: '13px' }}>🗄️ PostgreSQL Database</span>
-          <span className="badge" style={{ padding: '8px 16px', fontSize: '13px' }}>⚡ Express API</span>
-          <span className="badge" style={{ padding: '8px 16px', fontSize: '13px' }}>⚛️ React + Vite</span>
-        </div>
-      </section>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+        <span className="badge">
+        <FaReact className="icon react" /> React + Vite
+      </span>
+      <span className="badge">
+        <FaServer className="icon express" /> Express.js API
+      </span>
+      <span className="badge">
+        <FaDatabase className="icon postgres" /> PostgreSQL
+      </span>
+      <span className="badge">
+        <FaLock className="icon jwt" /> JWT Authentication
+      </span>
+      </div>
+    </section>
     </div>
   )
 }
