@@ -107,14 +107,13 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
 
   function exec(cmd: string, arg?: string) {
     if (!ref.current) return
-    // keep focus in the editor so toggles (lists, bold, etc.) work as expected
     ref.current.focus()
     document.execCommand(cmd, false, arg)
   }
 
   return (
       <div className="note-editor">
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
           <EditorButton onExec={exec} cmd="bold" label="Bold" />
           <EditorButton onExec={exec} cmd="italic" label="Italic" />
           <EditorButton onExec={exec} cmd="underline" label="Underline" />
@@ -122,6 +121,73 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
           <EditorButton onExec={exec} cmd="insertOrderedList" label="1. List" />
           <EditorButton onExec={exec} cmd="formatBlock" arg="h2" label="H2" />
           <EditorButton onExec={exec} cmd="formatBlock" arg="p" label="P" />
+          
+          {/* Font Size Options */}
+          <select 
+            onChange={(e) => {
+              const size = e.target.value
+              if (size === 'default') {
+                document.execCommand('removeFormat', false)
+              } else {
+                document.execCommand('fontSize', false, '7')
+                const fontElements = document.querySelectorAll('font[size="7"]')
+                fontElements.forEach(el => {
+                  if (el instanceof HTMLElement) {
+                    el.removeAttribute('size')
+                    el.style.fontSize = size
+                  }
+                })
+              }
+            }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="default">Font Size</option>
+            <option value="12px">Small (12px)</option>
+            <option value="14px">Normal (14px)</option>
+            <option value="16px">Medium (16px)</option>
+            <option value="18px">Large (18px)</option>
+            <option value="20px">XL (20px)</option>
+            <option value="24px">XXL (24px)</option>
+          </select>
+
+          {/* Font Family Options */}
+          <select 
+            onChange={(e) => {
+              const fontFamily = e.target.value
+              if (fontFamily === 'default') {
+                document.execCommand('removeFormat', false)
+              } else {
+                document.execCommand('fontName', false, fontFamily)
+              }
+            }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="default">Font Family</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Times New Roman, serif">Times New Roman</option>
+            <option value="Helvetica, sans-serif">Helvetica</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="Courier New, monospace">Courier New</option>
+            <option value="Comic Sans MS, cursive">Comic Sans</option>
+            <option value="Impact, sans-serif">Impact</option>
+          </select>
         </div>
       <div
         ref={ref}

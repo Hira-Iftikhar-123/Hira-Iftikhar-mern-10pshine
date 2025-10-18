@@ -72,10 +72,10 @@ export function NotesDashboard() {
             style={{
               margin: 0,
               fontSize: 28,
-              color: theme === 'light' ? '#000000' : '#ffffff', // 🌓 dynamic text color
+              color: theme === 'light' ? '#000000' : '#ffffff',
               fontWeight: 650,
               letterSpacing: '-0.025em',
-              transition: 'color 0.3s ease', // smooth transition when switching
+              transition: 'color 0.3s ease', 
             }}
           >
             All Notes
