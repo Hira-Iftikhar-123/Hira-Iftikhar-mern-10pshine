@@ -4,7 +4,8 @@ import axios from 'axios'
 
 type Note = { id: string; title: string; content: string; created_at: string; updated_at: string }
 
-export function NoteEditor() {
+export function NoteEditor() 
+{
   const { id } = useParams()
   const nav = useNavigate()
   const [title, setTitle] = useState('')
@@ -111,6 +112,58 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
     document.execCommand(cmd, false, arg)
   }
 
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !ref.current) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file')
+      return
+    }
+
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string
+      if (imageUrl && ref.current) {
+        // Insert image at cursor position
+        const img = document.createElement('img')
+        img.src = imageUrl
+        img.style.maxWidth = '100%'
+        img.style.height = 'auto'
+        img.style.borderRadius = '8px'
+        img.style.margin = '8px 0'
+        
+        // Insert image at current cursor position
+        const selection = window.getSelection()
+        if (selection && selection.rangeCount > 0) 
+        {
+          const range = selection.getRangeAt(0)
+          range.insertNode(img)
+          range.setStartAfter(img)
+          range.setEndAfter(img)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        } 
+        else 
+        {
+          ref.current.appendChild(img)
+        }
+        onChange(ref.current.innerHTML)
+      }
+    }
+    reader.readAsDataURL(file)
+    
+    // Reset file input
+    e.target.value = ''
+  }
+
   return (
       <div className="note-editor">
         <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
@@ -126,17 +179,56 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
           <select 
             onChange={(e) => {
               const size = e.target.value
+              if (!ref.current) return
+              
+              // Ensure editor has focus
+              ref.current.focus()
+              
               if (size === 'default') {
                 document.execCommand('removeFormat', false)
               } else {
-                document.execCommand('fontSize', false, '7')
-                const fontElements = document.querySelectorAll('font[size="7"]')
-                fontElements.forEach(el => {
-                  if (el instanceof HTMLElement) {
-                    el.removeAttribute('size')
-                    el.style.fontSize = size
+                // Check if text is selected
+                const selection = window.getSelection()
+                const hasSelection = selection && selection.toString().trim().length > 0
+                
+                if (hasSelection) {
+                  // Apply to selected text
+                  document.execCommand('fontSize', false, '7')
+                  
+                  // Immediately fix the font elements
+                  const fontElements = document.querySelectorAll('font[size="7"]')
+                  fontElements.forEach(el => {
+                    if (el instanceof HTMLElement) {
+                      el.removeAttribute('size')
+                      el.style.fontSize = size
+                      el.style.lineHeight = '1.4'
+                    }
+                  })
+                } else {
+                  // Apply to current paragraph or entire content
+                  const range = document.createRange()
+                  const sel = window.getSelection()
+                  
+                  if (ref.current.contains(document.activeElement)) {
+                    // Apply to current paragraph
+                    const p = document.activeElement?.closest('p') || ref.current
+                    range.selectNodeContents(p)
+                    sel?.removeAllRanges()
+                    sel?.addRange(range)
+                    
+                    document.execCommand('fontSize', false, '7')
+                    
+                    // Fix font elements
+                    const fontElements = document.querySelectorAll('font[size="7"]')
+                    fontElements.forEach(el => {
+                      if (el instanceof HTMLElement) {
+                        el.removeAttribute('size')
+                        el.style.fontSize = size
+                        el.style.lineHeight = '1.4'
+                      }
+                    })
                   }
-                })
+                }
               }
             }}
             style={{
@@ -188,6 +280,24 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
             <option value="Comic Sans MS, cursive">Comic Sans</option>
             <option value="Impact, sans-serif">Impact</option>
           </select>
+
+          {/* Image Upload Button */}
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+              id="image-upload"
+            />
+            <button
+              onClick={() => document.getElementById('image-upload')?.click()}
+              className="btn btn-secondary"
+              style={{ width: 'auto', padding: '8px 12px', borderRadius: 8, fontSize: 14, color: '#702963' }}
+            >
+              📷 Image
+            </button>
+          </div>
         </div>
       <div
         ref={ref}

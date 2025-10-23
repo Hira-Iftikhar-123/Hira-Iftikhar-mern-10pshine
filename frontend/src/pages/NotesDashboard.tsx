@@ -38,36 +38,30 @@ export function NotesDashboard() {
   return (
     <div className="page-bg">
       <div className="container-narrow notes-wrap">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div 
-              onClick={() => nav('/')}
-              style={{ 
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 12px',
-                borderRadius: 8,
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.2)',
-                transition: 'all 0.2s ease',
-                fontWeight: 700,
-                fontSize: 16,
-                color: '#6366f1'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <span style={{ fontSize: 16 }}>←</span>
-              <span>Home</span>
-            </div>
+        <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          marginBottom: 24
+        }}>
+          <div 
+            onClick={() => nav('/')}
+            style={{ 
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: 16,
+              color: '#6366f1', 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 0 
+            }}>
+            <span style={{ fontSize: 14 }}>←</span>
+            <span>Home</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h1
             style={{
               margin: 0,
@@ -80,14 +74,13 @@ export function NotesDashboard() {
           >
             All Notes
           </h1>
-          </div>
            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
              <ThemeToggle />
              <button className="btn btn-secondary" style={{ color: '#6366f1', width: 'auto', padding: '10px 14px' }} onClick={load}>Refresh</button>
              <button className="btn btn-secondary" style={{color: '#e39ffb', width: 'auto', padding: '10px 14px' }} onClick={createNewNote}>New Note</button>
            </div>
         </div>
-
+        </div>
         <div className="surface" style={{ padding: 24 }}>
           {loading && <div>Loading…</div>}
           {error && (

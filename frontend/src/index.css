@@ -354,6 +354,22 @@ a:hover { color: var(--primary-600); }
   padding: 14px 16px;
   resize: vertical;
 }
+
+/* Image styling in editor and notes */
+.editor-textarea img,
+.note-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 8px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.editor-textarea img:hover,
+.note-content img:hover {
+  transform: scale(1.02);
+}
 /* Decorative blobs */
 .blob {
   position: absolute;
@@ -366,6 +382,21 @@ a:hover { color: var(--primary-600); }
 .blob.three { width: 480px; height: 480px; background: radial-gradient(circle at 50% 50%, #4c1d95, transparent 60%); bottom: 0; left: 30%; }
 
 @media (max-width: 640px) {
-  .app-header { margin-bottom: 8px; }
+  .app-header { 
+    margin-bottom: 8px; 
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
   .hero { padding: 32px 16px; }
+  
+  /* Responsive dropdown positioning */
+  .profile-dropdown {
+    position: fixed !important;
+    top: 80px !important;
+    right: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
 }

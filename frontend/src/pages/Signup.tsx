@@ -9,14 +9,42 @@ export function Signup() {
   const { signup } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  function handleProfilePictureUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file')
+      return
+    }
+
+    // Validate file size 
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Profile picture size must be less than 2MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string
+      if (imageUrl) {
+        setProfilePicture(imageUrl)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     try {
       logger.userActivity('signup_form_submit', undefined, email)
-      await signup(email, password)
+      await signup(email, password, name, profilePicture || undefined)
       logger.userActivity('signup_success_navigation', undefined, email)
       nav('/')
     } catch (err: any) {
@@ -45,6 +73,17 @@ export function Signup() {
           
           <form className="stack" onSubmit={onSubmit} style={{ gap: '20px' }}> 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Full Name</label>
+              <input 
+                className="input" 
+                placeholder="Enter your full name" 
+                value={name} 
+                onChange={e => setName(e.target.value)}
+                style={{ padding: '16px', fontSize: '16px', borderRadius: '12px' }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Email Address</label>
               <input 
                 className="input" 
@@ -68,6 +107,63 @@ export function Signup() {
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>
                 Must be at least 6 characters long
               </p>
+            </div>
+
+            {/* Profile Picture Upload */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Profile Picture (Optional)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureUpload}
+                    style={{ display: 'none' }}
+                    id="profile-picture-upload"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('profile-picture-upload')?.click()}
+                    className="btn btn-secondary"
+                    style={{ 
+                      padding: '8px 16px', 
+                      fontSize: '14px', 
+                      borderRadius: '8px',
+                      width: 'auto'
+                    }}
+                  >
+                    📷 Choose Photo
+                  </button>
+                </div>
+                {profilePicture && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img 
+                      src={profilePicture} 
+                      alt="Profile preview" 
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '50%', 
+                        objectFit: 'cover',
+                        border: '2px solid var(--primary)'
+                      }} 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProfilePicture(null)}
+                      style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        color: 'var(--error)', 
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             
             <button 

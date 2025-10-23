@@ -2,14 +2,15 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { logger } from '../utils/logger'
 
-type AuthUser = { id: string; email: string } | null
+type AuthUser = { id: string; email: string; name?: string; profilePicture?: string } | null
 
 type AuthContextShape = {
   user: AuthUser
   token: string | null
   login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string) => Promise<void>
+  signup: (email: string, password: string, name?: string, profilePicture?: string) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextShape | undefined>(undefined)
@@ -53,10 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function signup(email: string, password: string) {
+  async function signup(email: string, password: string, name?: string, profilePicture?: string) {
     try {
       logger.authActivity('signup_attempt', email)
-      await axios.post('/api/auth/signup', { email, password })
+      await axios.post('/api/auth/signup', { email, password, name, profilePicture })
       await login(email, password)
       logger.authActivity('signup_success', email)
     } catch (error: any) {
@@ -70,7 +71,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null)
   }
 
-  const value = useMemo(() => ({ user, token, login, signup, logout }), [user, token])
+  async function refreshUser() {
+    if (!token) return
+    try {
+      const { data } = await axios.get('/api/auth/me')
+      setUser(data)
+      logger.authActivity('user_profile_refreshed', data.email, { userId: data.id })
+    } catch (error) {
+      logger.apiError('refresh_user_profile', error)
+    }
+  }
+
+  const value = useMemo(() => ({ user, token, login, signup, logout, refreshUser }), [user, token])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

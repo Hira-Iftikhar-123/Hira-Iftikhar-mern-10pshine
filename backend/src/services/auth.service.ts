@@ -20,6 +20,8 @@ export async function ensureTables() {
             id UUID PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
+            name VARCHAR(255),
+            profile_picture TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`;
@@ -40,7 +42,7 @@ export async function ensureTables() {
     }
 }
 
-export async function createUser(email: string, password: string) {
+export async function createUser(email: string, password: string, name?: string, profilePicture?: string) {
     await ensureTables();
     const client = await pool.connect();
     try {
@@ -65,7 +67,7 @@ export async function createUser(email: string, password: string) {
         
         const hash = await bcrypt.hash(password, 10);
         const id = crypto.randomUUID();
-        await client.query('INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)', [id, email, hash]);
+        await client.query('INSERT INTO users (id, email, password_hash, name, profile_picture) VALUES ($1, $2, $3, $4, $5)', [id, email, hash, name || null, profilePicture || null]);
         
         logger.info({
             type: 'user_activity',
@@ -75,7 +77,7 @@ export async function createUser(email: string, password: string) {
             timestamp: new Date().toISOString()
         }, `User created successfully: ${email}`);
         
-        return { id, email };
+        return { id, email, name: name || null, profilePicture: profilePicture || null };
     } finally {
         client.release();
     }
@@ -138,7 +140,7 @@ export async function findUserById(id: string) {
     await ensureTables();
     const client = await pool.connect();
     try {
-        const result = await client.query('SELECT id, email FROM users WHERE id = $1', [id]);
+        const result = await client.query('SELECT id, email, name, profile_picture FROM users WHERE id = $1', [id]);
         if (result.rows.length === 0) {
             logger.warn({
                 type: 'user_activity',
@@ -156,7 +158,156 @@ export async function findUserById(id: string) {
             timestamp: new Date().toISOString()
         }, `User lookup successful: ${id}`);
         
-        return result.rows[0];
+        const user = result.rows[0];
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            profilePicture: user.profile_picture
+        };
+    } finally {
+        client.release();
+    }
+}
+
+export async function updateUser(userId: string, data: { name?: string; profilePicture?: string; currentPassword?: string; newPassword?: string }) {
+    await ensureTables();
+    const client = await pool.connect();
+    try {
+        logger.info({
+            type: 'user_activity',
+            action: 'user_update',
+            userId,
+            fieldsToUpdate: Object.keys(data).filter(key => data[key as keyof typeof data] !== undefined),
+            timestamp: new Date().toISOString()
+        }, `User ${userId} updating profile`);
+
+        // Check if user exists
+        const userResult = await client.query('SELECT id, password_hash FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            logger.warn({
+                type: 'user_activity',
+                action: 'user_update_failed',
+                reason: 'user_not_found',
+                userId,
+                timestamp: new Date().toISOString()
+            }, `User update failed - user not found: ${userId}`);
+            throw Object.assign(new Error('User not found'), { status: 404 });
+        }
+
+        const fieldsToUpdate: string[] = [];
+        const values: any[] = [];
+
+        // Handle password change
+        if (data.newPassword && data.currentPassword) {
+            const user = userResult.rows[0];
+            const isValidPassword = await bcrypt.compare(data.currentPassword, user.password_hash);
+            if (!isValidPassword) {
+                logger.warn({
+                    type: 'user_activity',
+                    action: 'user_update_failed',
+                    reason: 'invalid_current_password',
+                    userId,
+                    timestamp: new Date().toISOString()
+                }, `User update failed - invalid current password: ${userId}`);
+                throw Object.assign(new Error('Invalid current password'), { status: 400 });
+            }
+            
+            const newHash = await bcrypt.hash(data.newPassword, 10);
+            fieldsToUpdate.push('password_hash = $' + (values.length + 1));
+            values.push(newHash);
+        }
+
+        // Handle name update
+        if (data.name !== undefined) {
+            fieldsToUpdate.push('name = $' + (values.length + 1));
+            values.push(data.name);
+        }
+
+        // Handle profile picture update
+        if (data.profilePicture !== undefined) {
+            fieldsToUpdate.push('profile_picture = $' + (values.length + 1));
+            values.push(data.profilePicture);
+        }
+
+        if (fieldsToUpdate.length === 0) {
+            logger.debug({
+                type: 'user_activity',
+                action: 'user_update_no_changes',
+                userId,
+                timestamp: new Date().toISOString()
+            }, `User ${userId} update - no changes made`);
+            const result = await client.query('SELECT id, email, name, profile_picture FROM users WHERE id = $1', [userId]);
+            const user = result.rows[0];
+            return {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                profilePicture: user.profile_picture
+            };
+        }
+
+        values.push(userId);
+        // Always bump updated_at on updates
+        fieldsToUpdate.push('updated_at = CURRENT_TIMESTAMP');
+        const query = `UPDATE users SET ${fieldsToUpdate.join(', ')} WHERE id = $${values.length}`;
+        await client.query(query, values);
+        
+        const result = await client.query('SELECT id, email, name, profile_picture FROM users WHERE id = $1', [userId]);
+        
+        logger.info({
+            type: 'user_activity',
+            action: 'user_update_success',
+            userId,
+            updatedFields: fieldsToUpdate,
+            timestamp: new Date().toISOString()
+        }, `User ${userId} updated successfully`);
+        
+        const user = result.rows[0];
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            profilePicture: user.profile_picture
+        };
+    } finally {
+        client.release();
+    }
+}
+
+export async function deleteUser(userId: string) {
+    await ensureTables();
+    const client = await pool.connect();
+    try {
+        logger.info({
+            type: 'user_activity',
+            action: 'user_deletion',
+            userId,
+            timestamp: new Date().toISOString()
+        }, `User ${userId} deleting account`);
+
+        // Check if user exists
+        const userResult = await client.query('SELECT id FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            logger.warn({
+                type: 'user_activity',
+                action: 'user_deletion_failed',
+                reason: 'user_not_found',
+                userId,
+                timestamp: new Date().toISOString()
+            }, `User deletion failed - user not found: ${userId}`);
+            throw Object.assign(new Error('User not found'), { status: 404 });
+        }
+
+        // Delete user (cascade will handle notes)
+        await client.query('DELETE FROM users WHERE id = $1', [userId]);
+        
+        logger.info({
+            type: 'user_activity',
+            action: 'user_deletion_success',
+            userId,
+            timestamp: new Date().toISOString()
+        }, `User ${userId} deleted successfully`);
     } finally {
         client.release();
     }
