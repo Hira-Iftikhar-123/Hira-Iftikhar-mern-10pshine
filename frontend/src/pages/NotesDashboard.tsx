@@ -61,7 +61,7 @@ export function NotesDashboard() {
             <span>Home</span>
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
             <h1
             style={{
               margin: 0,
