@@ -170,6 +170,40 @@ export async function findUserById(id: string) {
     }
 }
 
+export async function findUserByEmail(email: string) {
+    await ensureTables();
+    const client = await pool.connect();
+    try {
+        const result = await client.query('SELECT id, email, name, profile_picture FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            logger.warn({
+                type: 'user_activity',
+                action: 'user_lookup_by_email_failed',
+                email,
+                timestamp: new Date().toISOString()
+            }, `User lookup by email failed - user not found: ${email}`);
+            return null;
+        }
+        
+        logger.debug({
+            type: 'user_activity',
+            action: 'user_lookup_by_email_success',
+            email,
+            timestamp: new Date().toISOString()
+        }, `User lookup by email successful: ${email}`);
+        
+        const user = result.rows[0];
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            profilePicture: user.profile_picture
+        };
+    } finally {
+        client.release();
+    }
+}
+
 export async function updateUser(userId: string, data: { name?: string; profilePicture?: string; currentPassword?: string; newPassword?: string }) {
     await ensureTables();
     const client = await pool.connect();

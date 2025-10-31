@@ -101,6 +101,26 @@ export function Login() {
               />
             </div>
 
+            <div style={{ textAlign: 'right', marginBottom: '16px' }}>
+              <Link
+                to="/forgot-password"
+                style={{ 
+                  color: 'var(--primary)', 
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.textDecoration = 'underline'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.textDecoration = 'none'
+                }}
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
             <button
               className="btn btn-primary"
               type="submit"
