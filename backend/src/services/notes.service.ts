@@ -12,7 +12,12 @@ const pool = new Pool({
 });
 
 export const notesService = {
-    async listUserNotes(userId: string) 
+    async listUserNotes(userId: string, filters?: {
+        search?: string;
+        sortBy?: 'created_at' | 'updated_at' | 'title';
+        sortOrder?: 'asc' | 'desc';
+        dateFilter?: 'today' | 'week' | 'month' | 'all';
+    }) 
     {
         const client = await pool.connect();
         try {
@@ -20,16 +25,62 @@ export const notesService = {
                 type: 'note_activity',
                 action: 'list_notes',
                 userId,
+                filters,
                 timestamp: new Date().toISOString()
             }, `User ${userId} listing notes`);
 
-            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE user_id = $1 ORDER BY updated_at DESC', [userId]);
+            const conditions: string[] = ['user_id = $1'];
+            const values: any[] = [userId];
+            let paramIndex = 2;
+
+            // Search filter - only search by title
+            if (filters?.search && filters.search.trim()) {
+                conditions.push(`LOWER(title) LIKE $${paramIndex}`);
+                values.push(`%${filters.search.toLowerCase()}%`);
+                paramIndex++;
+            }
+
+            // Date filter
+            if (filters?.dateFilter && filters.dateFilter !== 'all') {
+                const now = new Date();
+                let startDate: Date;
+                
+                switch (filters.dateFilter) {
+                    case 'today':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        break;
+                    case 'week':
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'month':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        break;
+                    default:
+                        startDate = new Date(0);
+                }
+                
+                conditions.push(`updated_at >= $${paramIndex}`);
+                values.push(startDate.toISOString());
+                paramIndex++;
+            }
+
+            // Build WHERE clause
+            const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+            // Sort options
+            const sortBy = filters?.sortBy || 'updated_at';
+            const sortOrder = filters?.sortOrder || 'desc';
+            const orderBy = `ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
+
+            const query = `SELECT id, title, content, tags, created_at, updated_at FROM notes ${whereClause} ${orderBy}`;
+            const result = await client.query(query, values);
             
             logger.info({
                 type: 'note_activity',
                 action: 'list_notes_success',
                 userId,
                 noteCount: result.rows.length,
+                filters,
                 timestamp: new Date().toISOString()
             }, `User ${userId} retrieved ${result.rows.length} notes`);
             
@@ -38,7 +89,7 @@ export const notesService = {
             client.release();
         }
     },
-    async createNote(userId: string, data: { title: string; content?: string }) {
+    async createNote(userId: string, data: { title: string; content?: string; tags?: string }) {
         const client = await pool.connect();
         try {
             const id = crypto.randomUUID();
@@ -52,8 +103,8 @@ export const notesService = {
                 timestamp: new Date().toISOString()
             }, `User ${userId} creating note: ${data.title}`);
 
-            await client.query('INSERT INTO notes (id, title, content, user_id) VALUES ($1, $2, $3, $4)', [id, data.title, data.content || '', userId]);
-            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+            await client.query('INSERT INTO notes (id, title, content, tags, user_id) VALUES ($1, $2, $3, $4, $5)', [id, data.title, data.content || '', data.tags || null, userId]);
+            const result = await client.query('SELECT id, title, content, tags, created_at, updated_at FROM notes WHERE id = $1', [id]);
             
             logger.info({
                 type: 'note_activity',
@@ -69,7 +120,7 @@ export const notesService = {
             client.release();
         }
     },
-    async updateNote(userId: string, id: string, data: { title?: string; content?: string }) {
+    async updateNote(userId: string, id: string, data: { title?: string; content?: string; tags?: string }) {
         const client = await pool.connect();
         try {
             logger.info({
@@ -105,6 +156,10 @@ export const notesService = {
                 fieldsToUpdate.push('content = $' + (values.length + 1));
                 values.push(data.content);
             }
+            if (data.tags !== undefined) {
+                fieldsToUpdate.push('tags = $' + (values.length + 1));
+                values.push(data.tags || null);
+            }
 
             if (fieldsToUpdate.length === 0) {
                 logger.debug({
@@ -114,7 +169,7 @@ export const notesService = {
                     noteId: id,
                     timestamp: new Date().toISOString()
                 }, `User ${userId} update note ${id} - no changes made`);
-                const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+                const result = await client.query('SELECT id, title, content, tags, created_at, updated_at FROM notes WHERE id = $1', [id]);
                 return result.rows[0];
             }
 
@@ -124,7 +179,7 @@ export const notesService = {
             const query = `UPDATE notes SET ${fieldsToUpdate.join(', ')} WHERE id = $${values.length}`;
             await client.query(query, values);
             
-            const result = await client.query('SELECT id, title, content, created_at, updated_at FROM notes WHERE id = $1', [id]);
+            const result = await client.query('SELECT id, title, content, tags, created_at, updated_at FROM notes WHERE id = $1', [id]);
             
             logger.info({
                 type: 'note_activity',

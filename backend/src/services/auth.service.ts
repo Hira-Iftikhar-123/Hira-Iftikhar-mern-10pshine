@@ -29,6 +29,7 @@ export async function ensureTables() {
             id UUID PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             content TEXT,
+            tags VARCHAR(500),
             user_id UUID NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -37,6 +38,17 @@ export async function ensureTables() {
         
         await client.query(sqlUser);
         await client.query(sqlNote);
+        await client.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'notes' AND column_name = 'tags'
+                ) THEN
+                    ALTER TABLE notes ADD COLUMN tags VARCHAR(500);
+                END IF;
+            END $$;
+        `);
     } finally {
         client.release();
     }

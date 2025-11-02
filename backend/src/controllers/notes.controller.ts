@@ -6,28 +6,44 @@ import logger from '../utils/logger';
 
 const noteSchema = z.object({
     title: z.string().min(1),
-    content: z.string().optional().default('')
+    content: z.string().optional().default(''),
+    tags: z.string().optional()
 });
 
 export async function getNotes(req: AuthRequest, res: Response) {
     const userId = req.userId!;
-    try {
+    try 
+    {
+        const search = req.query.search as string | undefined;
+        const sortBy = req.query.sortBy as 'created_at' | 'updated_at' | 'title' | undefined;
+        const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
+        const dateFilter = req.query.dateFilter as 'today' | 'week' | 'month' | 'all' | undefined;
+
+        const filters = {
+            ...(search && { search }),
+            ...(sortBy && { sortBy }),
+            ...(sortOrder && { sortOrder }),
+            ...(dateFilter && { dateFilter })
+        };
+
         logger.info({
             type: 'notes_controller',
             action: 'get_notes',
             userId,
+            filters,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
         }, `User ${userId} requesting notes list`);
 
-        const notes = await notesService.listUserNotes(userId);
+        const notes = await notesService.listUserNotes(userId, Object.keys(filters).length > 0 ? filters : undefined);
         
         logger.info({
             type: 'notes_controller',
             action: 'get_notes_success',
             userId,
             noteCount: notes.length,
+            filters,
             ip: req.ip,
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
