@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 
-type Note = { id: string; title: string; content: string; created_at: string; updated_at: string }
+type Note = { id: string; title: string; content: string; tags?: string; created_at: string; updated_at: string }
 
 export function NoteEditor() 
 {
@@ -10,6 +10,7 @@ export function NoteEditor()
   const nav = useNavigate()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [tags, setTags] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -22,6 +23,7 @@ export function NoteEditor()
         if (found) {
           setTitle(found.title)
           setContent(found.content)
+          setTags(found.tags || '')
         }
       } catch (e: any) {
         setError(e?.response?.data?.error || 'Failed to load note')
@@ -36,7 +38,8 @@ export function NoteEditor()
     try {
       if (!id) return
       const safeTitle = title && title.trim().length > 0 ? title.trim() : 'Untitled'
-      await axios.put(`/api/notes/${id}`, { title: safeTitle, content })
+      const tagsString = tags.trim() || null
+      await axios.put(`/api/notes/${id}`, { title: safeTitle, content, tags: tagsString })
       nav('/notes')
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Failed to save note')
@@ -84,6 +87,13 @@ export function NoteEditor()
               placeholder="Title"
               value={title}
               onChange={e => setTitle(e.target.value)}
+            />
+            <input
+              className="editor-input"
+              placeholder="Tags (comma-separated, e.g., work, important, meeting)"
+              value={tags}
+              onChange={e => setTags(e.target.value)}
+              style={{ fontSize: '14px' }}
             />
             <RichEditor value={content} onChange={setContent} />
           </div>
