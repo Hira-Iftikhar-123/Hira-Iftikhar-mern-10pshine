@@ -13,6 +13,8 @@ export function NoteEditor()
   const [tags, setTags] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [confirmChecked, setConfirmChecked] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -65,9 +67,9 @@ export function NoteEditor()
     <Link to="/notes" className="btn btn-secondary" style={{color: '#aa3377', width: 'auto', padding: '10px 20px' }}>Back </Link>
     </div>
 
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button
-        onClick={deleteNote}
+        onClick={() => setShowConfirmDelete(v => !v)}
         className="btn btn-secondary"
         style={{ width: 'auto', padding: '10px 14px' , color: '#b91c1c' }}> Delete
       </button>
@@ -81,6 +83,38 @@ export function NoteEditor()
         <div className="surface" style={{ padding: 8 }}>
           {loading && <div>Loading…</div>}
           {error && <div style={{ color: '#b91c1c', marginBottom: 12 }}>{error}</div>}
+          {showConfirmDelete && (
+            <div style={{
+              marginBottom: 12,
+              padding: '12px 14px',
+              border: '1px solid #fecaca',
+              background: '#fef2f2',
+              borderRadius: 10
+            }}>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#991b1b' }}>Confirm deletion</div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#7f1d1d' }}>
+                <input type="checkbox" checked={confirmChecked} onChange={(e) => setConfirmChecked(e.target.checked)} />
+                I understand this action cannot be undone.
+              </label>
+              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                <button
+                  onClick={deleteNote}
+                  disabled={!confirmChecked}
+                  className="btn btn-secondary"
+                  style={{ width: 'auto', padding: '8px 12px', color: '#b91c1c', opacity: confirmChecked ? 1 : 0.6 }}
+                >
+                  Confirm Delete
+                </button>
+                <button
+                  onClick={() => { setShowConfirmDelete(false); setConfirmChecked(false); }}
+                  className="btn btn-secondary"
+                  style={{ width: 'auto', padding: '8px 12px', color: '#6b7280' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           <div style={{ display: 'grid', gap: 12 }}>
             <input
               className="editor-input"

@@ -9,6 +9,8 @@ export function NotesDashboard() {
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null)
+  const [confirmChecked, setConfirmChecked] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'created_at' | 'updated_at' | 'title'>('updated_at')
@@ -113,6 +115,17 @@ export function NotesDashboard() {
         )}
       </div>
     )
+  }
+
+  async function deleteNote(id: string) {
+    try {
+      await axios.delete(`/api/notes/${id}`)
+      setNotes(prev => prev.filter(n => n.id !== id))
+      setConfirmNoteId(null)
+      setConfirmChecked(false)
+    } catch (e: any) {
+      setError(e?.response?.data?.error || 'Failed to delete note')
+    }
   }
 
   return (
@@ -333,11 +346,81 @@ export function NotesDashboard() {
           
           <div className="note-list">
             {notes.map(n => (
-              <button key={n.id} className="note-card" onClick={() => nav(`/editor/${n.id}`)} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontWeight: 700, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title || 'Untitled'}</div>
-                {renderTags(n.tags)}
-                <div style={{ color: '#6b7280', fontSize: 13, marginTop: 8 }}>Updated {new Date(n.updated_at).toLocaleString()}</div>
-              </button>
+              <div key={n.id} className="note-card" style={{ display: 'flex', flexDirection: 'column', minWidth: 260, position: 'relative' }}>
+                <div onClick={() => nav(`/editor/${n.id}`)} style={{ cursor: 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title || 'Untitled'}</div>
+                  {renderTags(n.tags)}
+                  <div style={{ color: '#6b7280', fontSize: 13, marginTop: 8 }}>Updated {new Date(n.updated_at).toLocaleString()}</div>
+                </div>
+
+                <button
+                  aria-label="Delete note"
+                  title="Delete note"
+                  onClick={(e) => { e.stopPropagation(); setConfirmNoteId(n.id); setConfirmChecked(false) }}
+                  style={{ 
+                    position: 'absolute', top: 8, right: 8,
+                    width: '32px', height: '32px', borderRadius: '9999px',
+                    padding: 0, display: 'grid', placeItems: 'center',
+                    background: '#fee2e2', border: '1px solid #fecaca',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.06)', cursor: 'pointer',
+                    transition: 'all .18s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = '#ffe4e6'
+                    ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = '#fee2e2'
+                    ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 7H18" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M9 7V5C9 4.44772 9.44772 4 10 4H14C14.5523 4 15 4.44772 15 5V7" stroke="#b91c1c" strokeWidth="1" strokeLinecap="round"/>
+                    <path d="M7 7L8 20C8.07465 21.1046 8.89543 22 10 22H14C15.1046 22 15.9253 21.1046 16 20L17 7" stroke="#b91c1c" strokeWidth="5"/>
+                    <path d="M10 11V18" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M14 11V18" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+
+                {confirmNoteId === n.id && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 48,
+                    right: 8,
+                    width: 240,
+                    padding: '10px 12px',
+                    borderRadius: 10,
+                    border: '1px solid #fecaca',
+                    background: '#fef2f2',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
+                  }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: '#7f1d1d', fontSize: 13 }}>
+                      <input type="checkbox" checked={confirmChecked} onChange={(e) => setConfirmChecked(e.target.checked)} />
+                      <span>Cannot be undone.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => { setConfirmNoteId(null); setConfirmChecked(false) }}
+                        className="btn btn-secondary"
+                        style={{ width: 'auto', padding: '6px 10px', color: '#6b7280' }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => deleteNote(n.id)}
+                        disabled={!confirmChecked}
+                        className="btn btn-secondary"
+                        style={{ width: 'auto', padding: '6px 10px', color: '#b91c1c', opacity: confirmChecked ? 1 : 0.6 }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
             {!loading && notes.length === 0 && (
               <div className="subtle" style={{ textAlign: 'center', padding: 24, gridColumn: '1 / -1' }}>No notes yet. Create your first note.</div>
